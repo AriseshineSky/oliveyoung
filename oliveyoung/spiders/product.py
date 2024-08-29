@@ -285,7 +285,29 @@ class ProductSpider(scrapy.Spider):
                 info = None
         
             if info and ('details' in info):
-                pass
+                details = info['details']
+                descr = ""
+                
+                if details['sellingPointText'] or details['whyWeLoveItText'] or details['ftrdIngrdText'] or details['howToUseText']:
+                    descr += '<div class="oliveyoung-descr">'
+                    descr += '  <h2>Product infos</h2>\n'
+                    if details['sellingPointText']:
+                        descr += '  <h3>Selling point</h3>\n'
+                        descr += f'  <div>{details['sellingPointText']}</div>'
+                    if details['whyWeLoveItText']:
+                        descr += '  <h3>Why we love it</h3>\n'
+                        descr += f'  <div>{details['whyWeLoveItText']}</div>'
+                    if details['ftrdIngrdText']:
+                        descr += '  <h3>Featured ingredients</h3>\n'
+                        descr += f'  <div>{details['ftrdIngrdText']}</div>'
+                    if details['howToUseText']:
+                        descr += '  <h3>How to use</h3>\n'
+                        descr += f'  <div>{details['howToUseText']}</div>'
+                    descr += '</div>\n'
+
+                # TODO：解析图片
+
+                self.description['description'] = descr
 
     def intercept_request_with_body(self, body):
         """
