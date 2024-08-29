@@ -288,21 +288,23 @@ class ProductSpider(scrapy.Spider):
                 details = info['details']
                 descr = ""
                 
-                if details['sellingPointText'] or details['whyWeLoveItText'] or details['ftrdIngrdText'] or details['howToUseText']:
+                if details['sellingPointText'] or details['whyWeLoveItText'] or details['ftrdIngrdText'] or details['howToUseText'] or details['dtlAddDesc']:
                     descr += '<div class="oliveyoung-descr">'
                     descr += '  <h2>Product infos</h2>\n'
                     if details['sellingPointText']:
                         descr += '  <h3>Selling point</h3>\n'
-                        descr += f'  <div>{details['sellingPointText']}</div>'
+                        descr += f'  <div>{details['sellingPointText'].replace('\r\n', '<br>')}</div>'
                     if details['whyWeLoveItText']:
                         descr += '  <h3>Why we love it</h3>\n'
-                        descr += f'  <div>{details['whyWeLoveItText']}</div>'
+                        descr += f'  <div>{details['whyWeLoveItText'].replace('\r\n', '<br>')}</div>'
                     if details['ftrdIngrdText']:
                         descr += '  <h3>Featured ingredients</h3>\n'
-                        descr += f'  <div>{details['ftrdIngrdText']}</div>'
+                        descr += f'  <div>{details['ftrdIngrdText'].replace('\r\n', '<br>')}</div>'
                     if details['howToUseText']:
                         descr += '  <h3>How to use</h3>\n'
-                        descr += f'  <div>{details['howToUseText']}</div>'
+                        descr += f'  <div>{details['howToUseText'].replace('\r\n', '<br>')}</div>'
+                    if details['dtlAddDesc']:
+                        descr += f'  <div>{details['dtlAddDesc'].replace('\r\n', '<br>')}</div>'
                     descr += '</div>\n'
 
                 # TODO：解析图片
