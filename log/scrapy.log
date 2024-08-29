@@ -1,0 +1,38 @@
+2024-05-23 15:37:00 [scrapy-playwright] INFO: Launching browser chromium
+2024-05-23 15:37:00 [scrapy-playwright] INFO: Browser chromium launched
+2024-05-23 15:37:00 [scrapy-playwright] DEBUG: Browser context started: 'default' (persistent=False, remote=False)
+2024-05-23 15:37:01 [scrapy-playwright] DEBUG: [Context=default] New page created, page count is 1 (1 for all contexts)
+2024-05-23 15:37:01 [scrapy-playwright] DEBUG: [Context=default] Request: <GET https://global.oliveyoung.com/product/description-info> (resource type: document)
+2024-05-23 15:37:01 [scrapy.core.scraper] ERROR: Error downloading <GET https://global.oliveyoung.com/product/detail?prdtNo=GA230318013>
+Traceback (most recent call last):
+  File "/home/sky/python/lib/python3.11/site-packages/twisted/internet/defer.py", line 1693, in _inlineCallbacks
+    result = context.run(
+  File "/home/sky/python/lib/python3.11/site-packages/twisted/python/failure.py", line 518, in throwExceptionIntoGenerator
+    return g.throw(self.type, self.value, self.tb)
+  File "/home/sky/python/lib/python3.11/site-packages/scrapy/core/downloader/middleware.py", line 54, in process_request
+    return (yield download_func(request=request, spider=spider))
+  File "/home/sky/python/lib/python3.11/site-packages/twisted/internet/defer.py", line 1065, in adapt
+    extracted = result.result()
+  File "/home/sky/python/lib/python3.11/site-packages/scrapy_playwright/handler.py", line 314, in _download_request
+    page = await self._create_page(request=request, spider=spider)
+  File "/home/sky/python/lib/python3.11/site-packages/scrapy_playwright/handler.py", line 243, in _create_page
+    page = await ctx_wrapper.context.new_page()
+  File "/home/sky/python/lib/python3.11/site-packages/playwright/async_api/_generated.py", line 12274, in new_page
+    return mapping.from_impl(await self._impl_obj.new_page())
+  File "/home/sky/python/lib/python3.11/site-packages/playwright/_impl/_browser_context.py", line 293, in new_page
+    return from_channel(await self._channel.send("newPage"))
+  File "/home/sky/python/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 59, in send
+    return await self._connection.wrap_api_call(
+  File "/home/sky/python/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 509, in wrap_api_call
+    return await cb()
+  File "/home/sky/python/lib/python3.11/site-packages/playwright/_impl/_connection.py", line 97, in inner_send
+    result = next(iter(done)).result()
+playwright._impl._errors.TargetClosedError: Target page, context or browser has been closed
+2024-05-23 15:37:02 [scrapy-playwright] DEBUG: [Context=default] Response: <405 https://global.oliveyoung.com/product/description-info>
+2024-05-23 15:37:02 [scrapy-playwright] DEBUG: [Context=default] Request: <GET https://static.globaloliveyoungshop.com/fo/20240523/resources/css/ui.css> (resource type: stylesheet, referrer: https://global.oliveyoung.com/)
+2024-05-23 15:37:02 [scrapy-playwright] DEBUG: [Context=default] Request: <GET https://static.globaloliveyoungshop.com/fo/20240523/resources/css/style.css> (resource type: stylesheet, referrer: https://global.oliveyoung.com/)
+2024-05-23 15:37:02 [scrapy-playwright] DEBUG: [Context=default] Request: <GET https://static.globaloliveyoungshop.com/fo/20240523/resources/images/favicon/OY_favicon_144.png> (resource type: other, referrer: https://global.oliveyoung.com/)
+2024-05-23 15:37:02 [scrapy.core.engine] DEBUG: Crawled (405) <GET https://global.oliveyoung.com/product/description-info> (referer: https://global.oliveyoung.com/) ['playwright']
+2024-05-23 15:37:02 [scrapy-playwright] DEBUG: [Context=default] New page created, page count is 2 (2 for all contexts)
+2024-05-23 15:37:02 [scrapy-playwright] DEBUG: [Context=default] Request: <GET https://global.oliveyoung.com/product/detail?prdtNo=GA221016563> (resource type: document)
+2024-05-23 15:37:02 [scrapy.spidermiddlewares.httperror] INFO: Ignoring response <405 https://global.oliveyoung.com/product/description-info>: HTTP status code is not handled or not allowed
