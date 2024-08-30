@@ -76,12 +76,24 @@ class MyChemistSpider(scrapy.Spider):
             
         return (width, length)
 
+    def get_weight(self, text: str):
+        weight = None
+
+        match = findall(r'Size:\s*(\d+)\s*(\w+)', text)
+        if match:
+            unit = match[0][1].lower()
+            if (unit == 'kg') or (unit == 'l'):
+                weight = round(float(match[0][0])*2.204623, 2)
+            elif (unit == 'g') or (unit == 'ml'):
+                weight = round(float(match[0][0])*0.002205, 2)
+
+        return weight
+
     def parse(self, response: HtmlResponse):
         url = response.css('link[rel="canonical"]::attr(href)').get().strip()
 
         existence = True
         out_sel = response.css('div[style="margin:auto ; color:red ; font-size:20px ; text-align:left ; font-weight:bold"]::text')
-        head_sel = response.css('div.presc_selectheading')
         if out_sel and ('no longer available' in out_sel.get().lower()):
             existence = False
         
@@ -89,9 +101,29 @@ class MyChemistSpider(scrapy.Spider):
 
         # TODO
         description = None
+        weight = None
         descr_sels = response.css('section.product-info-section')
         if descr_sels:
-            description = None
+            description = '<div class="mychemist-descr">\n'
+
+            for pis in descr_sels:
+                if 'hidden' in pis.attrib.get('class', '').split():
+                    continue
+                
+                h2 = pis.css('h2::text').get().strip()
+                cont = pis.css('div.details').get()
+                description += f'  <h2>{h2}</h2>\n'
+                description += f'  <div>{cont}</div>\n'
+
+                px = response.css('section.product-info-section p')
+                if px:
+                    for p in px:
+                        p_txt = p.css('::text').get().strip().lower()
+                        if 'size' in p_txt:
+                            weight = self.get_weight(p_txt.split(':')[1].strip())
+                            break
+
+            description += '</div>\n'
         
         sku = None
         sku_sel = response.css('div.product-id')
