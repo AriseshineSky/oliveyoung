@@ -44,6 +44,8 @@ class MyChemistSpider(scrapy.Spider):
         length = None
 
         match1 = findall(r'([\d\.]+)\s*(\w*)\s*[Xx]\s*([\d\.]+)\s*(\w+)', text)
+        match2 = findall(r'([\d\.]+)\s*(\w+)', text)
+
         if match1:
             unit2 = match1[0][3].lower()
             unit1 = match1[0][1].lower() if match1[0][1] else unit2
@@ -65,6 +67,12 @@ class MyChemistSpider(scrapy.Spider):
             else:
                 length = amount2
                 width = amount1
+        elif match2:
+            unit = match1[0][1].lower()
+            if unit == 'm':
+                length = round(float(match1[0][0])*39.37008, 2)
+            elif unit == 'cm':
+                length = round(float(match1[0][0])*0.393701, 2)
             
         return (width, length)
 
@@ -74,14 +82,15 @@ class MyChemistSpider(scrapy.Spider):
         existence = True
         out_sel = response.css('div[style="margin:auto ; color:red ; font-size:20px ; text-align:left ; font-weight:bold"]::text')
         head_sel = response.css('div.presc_selectheading')
-        if (out_sel and ('no longer available' in out_sel.get().lower())) or (head_sel and ('prescription' in head_sel.get().lower())):
+        if out_sel and ('no longer available' in out_sel.get().lower()):
             existence = False
         
         title = self.get_title(response.css('title').get())
 
         # TODO
         description = None
-        if existence:
+        descr_sels = response.css('section.product-info-section')
+        if descr_sels:
             description = None
         
         sku = None
@@ -93,25 +102,24 @@ class MyChemistSpider(scrapy.Spider):
         categories = " > ".join(cats_list)
 
         images = None
-        if existence:
-            imgs = response.css('div.sub_images img')
-            img0 = response.css('div#this_slider img::attr(src)')
-            if imgs:
-                imgs_list = [img.css('::attr(src)').get().strip().replace('_50.jpg', '_800.jpg') for img in imgs]
-                images = ";".join(imgs_list)
-            elif img0:
-                images = img0.get().strip().replace('_200.jpg', '_800.jpg')
+        imgs = response.css('div.sub_images img')
+        img0 = response.css('div#this_slider img::attr(src)')
+        if imgs:
+            imgs_list = [img.css('::attr(src)').get().strip().replace('_50.jpg', '_800.jpg') for img in imgs]
+            images = ";".join(imgs_list)
+        elif img0:
+            images = img0.get().strip().replace('_200.jpg', '_800.jpg')
 
         videos = None
-        if existence:
-            vids = response.css('div.video-wrapper-16-9 > iframe')
-            if vids:
-                vids_list = [vid.css('::attr(src)').get().strip() for vid in vids]
-                videos = ";".join(vids_list)
+        vids = response.css('div.video-wrapper-16-9 > iframe')
+        if vids:
+            vids_list = [vid.css('::attr(src)').get().strip() for vid in vids]
+            videos = ";".join(vids_list)
 
         price = None
-        if existence:
-            price = round(float(response.css('span.product__price').get().strip()[1:])*self.AUD_RATE, 2)
+        price_sel = response.css('span.product__price')
+        if price_sel:
+            price = round(float(price_sel.get().strip()[1:])*self.AUD_RATE, 2)
 
         # TODO：从描述中解析出重量
         weight = None
