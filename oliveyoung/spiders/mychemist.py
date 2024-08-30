@@ -3,6 +3,8 @@ from re import findall
 import scrapy
 from scrapy.http import HtmlResponse
 
+
+# python3 -m mychemist_test.test_spiders.test_product
 class MyChemistSpider(scrapy.Spider):
     name = "mychemist"
     allowed_domains = ['mychemist.com.au']
