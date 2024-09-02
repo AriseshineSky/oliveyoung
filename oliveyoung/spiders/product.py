@@ -293,16 +293,16 @@ class ProductSpider(scrapy.Spider):
                     descr += '  <h2>Product infos</h2>\n'
                     if details['sellingPointText']:
                         descr += '  <h3>Selling point</h3>\n'
-                        descr += f'  <div>{details['sellingPointText'].replace('\r\n', '<br>')}</div>\n'
+                        descr += f'  <div>{details["sellingPointText"]}</div>\n'
                     if details['whyWeLoveItText']:
                         descr += '  <h3>Why we love it</h3>\n'
-                        descr += f'  <div>{details['whyWeLoveItText'].replace('\r\n', '<br>')}</div>\n'
+                        descr += f'  <div>{details["whyWeLoveItText"]}</div>\n'
                     if details['ftrdIngrdText']:
                         descr += '  <h3>Featured ingredients</h3>\n'
-                        descr += f'  <div>{details['ftrdIngrdText'].replace('\r\n', '<br>')}</div>\n'
+                        descr += f'  <div>{details["ftrdIngrdText"]}</div>\n'
                     if details['howToUseText']:
                         descr += '  <h3>How to use</h3>\n'
-                        descr += f'  <div>{details['howToUseText'].replace('\r\n', '<br>')}</div>\n'
+                        descr += f'  <div>{details["howToUseText"]}</div>\n'
                     descr += '</div>\n'
 
                 # TODO：解析图片
@@ -310,7 +310,7 @@ class ProductSpider(scrapy.Spider):
                     descr += '<div class="oliveyoung-descr">\n'
 
                     if details['dtlAddDesc']:
-                        descr += f'  <div>{details['dtlAddDesc'].replace('\r\n', '<br>')}</div>\n'
+                        descr += f'  <div>{details["dtlAddDesc"]}</div>\n'
                     
                     if details['optimDtlDesc']:
                         img_match = findall(r'data-src\s*=\s*&quot;([^\s]*)&quot;', details['optimDtlDesc'])

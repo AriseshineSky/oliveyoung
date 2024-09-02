@@ -1,5 +1,6 @@
 from datetime import datetime
 from re import findall
+from typing import Iterable
 import scrapy
 from scrapy.http import HtmlResponse
 
@@ -8,7 +9,7 @@ from scrapy.http import HtmlResponse
 class MyChemistSpider(scrapy.Spider):
     name = "mychemist"
     allowed_domains = ['mychemist.com.au']
-    start_urls = []
+    start_urls = ['https://www.mychemist.com.au/categories']
     prod_ids = set()
 
     AUD_RATE = 0.68 # 澳洲元汇率
@@ -29,6 +30,9 @@ class MyChemistSpider(scrapy.Spider):
             "Referer": "https://www.mychemist.com.au/buy/87343/ki-cold-and-flu-day-night-30-tablets",
             "Referrer-Policy": "strict-origin-when-cross-origin",
         }
+
+    def start_requests(self) -> Iterable[scrapy.Request]:
+        yield scrapy.Request(self.start_urls[0], headers=self.headers, callback=self.parse_categories)
 
     def get_product_id(self, url: str):
         id_match = findall(r'buy/(\d+)', url)
