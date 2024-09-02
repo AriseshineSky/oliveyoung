@@ -233,7 +233,7 @@ class MyChemistSpider(scrapy.Spider):
         for l in links:
             yield scrapy.Request(l, headers=self.headers, callback=self.parse)
         
-        print(total_pages, actual_page)
+        # print(total_pages, actual_page)
         if actual_page < total_pages:
             next_link = 'https://www.mychemist.com.au'+response.css('a.next-page::attr(href)').get()
             yield scrapy.Request(next_link, headers=self.headers, meta={

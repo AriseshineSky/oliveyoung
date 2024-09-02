@@ -56,7 +56,6 @@ class TestCategories(unittest.TestCase):
             body=body,
         )
         result = list(self.spider.parse_cat_products(response))
-        print(result[-1].body)
         self.assertEqual(len(result), 573)
 
 
