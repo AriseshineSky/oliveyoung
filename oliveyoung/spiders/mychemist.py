@@ -9,6 +9,7 @@ class MyChemistSpider(scrapy.Spider):
     name = "mychemist"
     allowed_domains = ['mychemist.com.au']
     start_urls = []
+    prod_ids = set()
 
     AUD_RATE = 0.68 # 澳洲元汇率
     
@@ -91,6 +92,9 @@ class MyChemistSpider(scrapy.Spider):
 
     def parse(self, response: HtmlResponse):
         url = response.css('link[rel="canonical"]::attr(href)').get().strip()
+        prod_id = self.get_product_id(url)
+        if prod_id in self.prod_ids:
+            return
 
         existence = True
         out_sel = response.css('div[style="margin:auto ; color:red ; font-size:20px ; text-align:left ; font-weight:bold"]::text')
@@ -99,7 +103,6 @@ class MyChemistSpider(scrapy.Spider):
         
         title = self.get_title(response.css('title').get())
 
-        # TODO
         description = None
         weight = None
         descr_sels = response.css('section.product-info-section')
@@ -153,16 +156,15 @@ class MyChemistSpider(scrapy.Spider):
         if price_sel:
             price = round(float(price_sel.get().strip()[1:])*self.AUD_RATE, 2)
 
-        # TODO：从描述中解析出重量
-        weight = None
-
         width, length = self.get_dimensions(title)
 
-        yield {
+        self.prod_ids.add(prod_id)
+
+        result = {
             "date": datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
             "url": url,
             "source": "My Chemist",
-            "product_id": self.get_product_id(url),
+            "product_id": prod_id,
             "existence": existence,
             "title": title,
             "title_en": title,
@@ -191,3 +193,20 @@ class MyChemistSpider(scrapy.Spider):
             "height": None,
             "length": length
         }
+        # print(result)
+        yield result
+
+    def parse_cat_products(self, response: HtmlResponse):
+        links = ['https://www.mychemist.com.au'+a.css('::attr(href)').get() for a in response.css('a.product-container')]
+        # print(links)
+        for l in links:
+            yield scrapy.Request(l, headers=self.headers, callback=self.parse)
+        
+        a_next = response.css('a.next-page')
+        if a_next:
+            next_link = a_next.css('::attr(href)').get()
+            yield scrapy.Request(next_link, headers=self.headers)
+    
+    # https://www.mychemist.com.au/categories
+    def parse_categories(self, response: HtmlResponse):
+        pass
