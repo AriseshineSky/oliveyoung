@@ -10,6 +10,7 @@ from scrapy.http import HtmlResponse
 
 
 # python3 -m mychemist_test.test_spiders.test_product
+# python3 -m mychemist_test.test_spiders.test_categories
 class MyChemistSpider(scrapy.Spider):
     name = "mychemist"
     allowed_domains = ['mychemist.com.au']
@@ -137,12 +138,12 @@ class MyChemistSpider(scrapy.Spider):
                 if px:
                     for p in px:
                         p_txt = p.css('::text').get().strip().lower()
-                        print(p_txt)
                         if 'size' in p_txt:
                             weight = self.get_weight(p_txt)
                             break
 
             description += '</div>\n'
+        print(description)
         
         sku = None
         sku_sel = response.css('div.product-id::text')
@@ -213,22 +214,38 @@ class MyChemistSpider(scrapy.Spider):
         yield result
 
     def parse_cat_products(self, response: HtmlResponse):
+        try:
+            total_pages = response.meta.get('total_pages')
+            actual_page = response.meta.get('actual_page')
+        except:
+            total_pages = None
+            actual_page = None
+
+        if total_pages is None:
+            total_pages = 1
+            actual_page = 1
+            total_sel = response.css('div.pager-count')
+            if total_sel:
+                total_pages = -(int(total_sel.css('::text').get().strip().split()[0]) // -120)
+
         links = ['https://www.mychemist.com.au'+a.css('::attr(href)').get() for a in response.css('a.product-container')]
         # print(links)
         for l in links:
             yield scrapy.Request(l, headers=self.headers, callback=self.parse)
         
-        a_next = response.css('a.next-page')
-        if a_next:
-            next_link = a_next.css('::attr(href)').get()
-            yield scrapy.Request(next_link, headers=self.headers)
-    
+        print(total_pages, actual_page)
+        if actual_page < total_pages:
+            next_link = 'https://www.mychemist.com.au'+response.css('a.next-page::attr(href)').get()
+            yield scrapy.Request(next_link, headers=self.headers, meta={
+                'total_pages': total_pages,
+                'actual_pages': actual_page+1
+            }, callback=self.parse_cat_products)
+
     # https://www.mychemist.com.au/categories
     def parse_categories(self, response: HtmlResponse):
-        trx = response.css('div#p_lt_ctl07_pageplaceholder_p_lt_ctl00_wCM_AMS_tg_pnltreeTree tbody > tr')
-        cat_links = ['https://www.mychemist.com.au'+tr.css('td span > a::attr(href)').get()
+        trx = response.css('div#p_lt_ctl07_pageplaceholder_p_lt_ctl00_wCM_AMS_tg_pnltreeTree tbody > tr') # 这里为什么测试时是空的？在网页上找却有很多内容
+        cat_links = ['https://www.mychemist.com.au'+tr.css('td span > a::attr(href)').get()+'?size=120'
                      for tr in trx if not tr.css('td img[alt="Expand"], td img[alt="Collapse"]')]
         
-        print(cat_links)
         for cl in cat_links:
             yield scrapy.Request(cl, headers=self.headers, callback=self.parse_cat_products)
