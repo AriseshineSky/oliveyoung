@@ -209,4 +209,10 @@ class MyChemistSpider(scrapy.Spider):
     
     # https://www.mychemist.com.au/categories
     def parse_categories(self, response: HtmlResponse):
-        pass
+        trx = response.css('div#p_lt_ctl07_pageplaceholder_p_lt_ctl00_wCM_AMS_tg_pnltreeTree tbody > tr')
+        cat_links = ['https://www.mychemist.com.au'+tr.css('td span > a::attr(href)').get()
+                     for tr in trx if not tr.css('td img[alt="Expand"], td img[alt="Collapse"]')]
+        
+        print(cat_links)
+        for cl in cat_links:
+            yield scrapy.Request(cl, headers=self.headers, callback=self.parse_cat_products)
