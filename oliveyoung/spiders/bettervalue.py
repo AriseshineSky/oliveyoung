@@ -43,8 +43,11 @@ class BetterValueSpider(scrapy.Spider):
             return
         
         next_url = 'https://bettervaluepharmacy.com.au'+response.css('div.pagination-page-infinite > a::attr(href)').get()
-        yield scrapy.Request(next_url, headers=self.headers)
+        yield scrapy.Request(next_url, headers=self.headers, callback=self.parse_cat_products)
 
     def parse_categories(self, response: HtmlResponse):
         cat_ax = response.css('a.header__menu-item')
-        cat_links = ['https://bettervaluepharmacy.com.au'+response.css('')]
+        cat_links = ['https://bettervaluepharmacy.com.au'+a.css('::attr(href)').get()
+                     for a in cat_ax if not a.css('span.icon-dropdown > svg')]
+        for cl in cat_links:
+            yield scrapy.Request(cl, headers=self.headers, callback=self.parse_cat_products)
