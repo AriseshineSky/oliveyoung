@@ -4,6 +4,7 @@ from scrapy.http import HtmlResponse
 
 
 # python3 -m bettervalue_test.test_spiders.test_product
+# python3 -m bettervalue_test.test_spiders.test_categories
 class BetterValueSpider(scrapy.Spider):
     name = "bettervalue"
     allowed_domains = ['bettervaluepharmacy.com.au']
@@ -33,7 +34,6 @@ class BetterValueSpider(scrapy.Spider):
         prod_ax = response.css('ul#main-collection-product-grid a.card-link')
         links = ['https://bettervaluepharmacy.com.au'+a.css('::attr(href)').get() for a in prod_ax]
 
-        print(links)
         for l in links:
             yield scrapy.Request(l, headers=self.headers,
                                 #  callback=
@@ -49,5 +49,6 @@ class BetterValueSpider(scrapy.Spider):
         cat_ax = response.css('a.header__menu-item')
         cat_links = ['https://bettervaluepharmacy.com.au'+a.css('::attr(href)').get()
                      for a in cat_ax if not a.css('span.icon-dropdown > svg')]
+
         for cl in cat_links:
             yield scrapy.Request(cl, headers=self.headers, callback=self.parse_cat_products)
