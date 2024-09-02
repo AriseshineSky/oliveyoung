@@ -1,5 +1,9 @@
-from datetime import datetime
+from html import unescape
 from re import findall
+import sys
+sys.path.append(sys.path[0] + '/..')
+
+from datetime import datetime
 from typing import Iterable
 import scrapy
 from scrapy.http import HtmlResponse
@@ -48,43 +52,50 @@ class MyChemistSpider(scrapy.Spider):
         width = None
         length = None
 
-        match1 = findall(r'([\d\.]+)\s*(\w*)\s*[Xx]\s*([\d\.]+)\s*(\w+)', text)
-        match2 = findall(r'([\d\.]+)\s*(\w+)', text)
+        match1 = findall(r'([\d\.]+)\s*([A-Za-z]*)\s*[Xx]\s*([\d\.]+)\s*([A-Za-z]+)', text)
+        match2 = findall(r'([\d\.]+)\s*([A-Za-z]+)', text)
 
         if match1:
-            unit2 = match1[0][3].lower()
-            unit1 = match1[0][1].lower() if match1[0][1] else unit2
+            for m in match1:
+                unit2 = m[3].lower()
+                unit1 = m[1].lower() if m[1] else unit2
 
-            amount1 = None
-            amount2 = None
-            if unit1 == 'm':
-                amount1 = round(float(match1[0][0])*39.37008, 2)
-            elif unit1 == 'cm':
-                amount1 = round(float(match1[0][0])*0.393701, 2)
-            if unit2 == 'm':
-                amount2 = round(float(match1[0][2])*39.37008, 2)
-            elif unit2 == 'cm':
-                amount2 = round(float(match1[0][2])*0.393701, 2)
+                amount1 = None
+                amount2 = None
+                if unit1 == 'm':
+                    amount1 = round(float(m[0])*39.37008, 2)
+                elif unit1 == 'cm':
+                    amount1 = round(float(m[0])*0.393701, 2)
+                if unit2 == 'm':
+                    amount2 = round(float(m[2])*39.37008, 2)
+                elif unit2 == 'cm':
+                    amount2 = round(float(m[2])*0.393701, 2)
 
-            if amount1 >= amount2:
-                length = amount1
-                width = amount2
-            else:
-                length = amount2
-                width = amount1
+                if (amount1 is not None) and (amount2 is not None):
+                    if amount1 >= amount2:
+                        length = amount1
+                        width = amount2
+                    else:
+                        length = amount2
+                        width = amount1
+                    break
         elif match2:
-            unit = match1[0][1].lower()
-            if unit == 'm':
-                length = round(float(match1[0][0])*39.37008, 2)
-            elif unit == 'cm':
-                length = round(float(match1[0][0])*0.393701, 2)
+            for m in match2:
+                unit = m[1].lower()
+                if unit == 'm':
+                    length = round(float(m[0])*39.37008, 2)
+                elif unit == 'cm':
+                    length = round(float(m[0])*0.393701, 2)
+                
+                if length is not None:
+                    break
             
         return (width, length)
 
     def get_weight(self, text: str):
         weight = None
 
-        match = findall(r'Size:\s*(\d+)\s*(\w+)', text)
+        match = findall(r'size:\s*(\d+)\s*([A-Za-z]+)', text)
         if match:
             unit = match[0][1].lower()
             if (unit == 'kg') or (unit == 'l'):
@@ -105,7 +116,7 @@ class MyChemistSpider(scrapy.Spider):
         if out_sel and ('no longer available' in out_sel.get().lower()):
             existence = False
         
-        title = self.get_title(response.css('title').get())
+        title = self.get_title(unescape(response.css('title').get()))
 
         description = None
         weight = None
@@ -126,14 +137,15 @@ class MyChemistSpider(scrapy.Spider):
                 if px:
                     for p in px:
                         p_txt = p.css('::text').get().strip().lower()
+                        print(p_txt)
                         if 'size' in p_txt:
-                            weight = self.get_weight(p_txt.split(':')[1].strip())
+                            weight = self.get_weight(p_txt)
                             break
 
             description += '</div>\n'
         
         sku = None
-        sku_sel = response.css('div.product-id')
+        sku_sel = response.css('div.product-id::text')
         if sku_sel:
             sku = sku_sel.get().split(':')[1].strip()
 
@@ -142,7 +154,7 @@ class MyChemistSpider(scrapy.Spider):
 
         images = None
         imgs = response.css('div.sub_images img')
-        img0 = response.css('div#this_slider img::attr(src)')
+        img0 = response.css('div#slider_pi_container img::attr(src2)')
         if imgs:
             imgs_list = [img.css('::attr(src)').get().strip().replace('_50.jpg', '_800.jpg') for img in imgs]
             images = ";".join(imgs_list)
@@ -158,7 +170,7 @@ class MyChemistSpider(scrapy.Spider):
         price = None
         price_sel = response.css('span.product__price')
         if price_sel:
-            price = round(float(price_sel.get().strip()[1:])*self.AUD_RATE, 2)
+            price = round(float(price_sel.css('::text').get().strip()[1:])*self.AUD_RATE, 2)
 
         width, length = self.get_dimensions(title)
 

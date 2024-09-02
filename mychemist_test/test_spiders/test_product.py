@@ -259,7 +259,7 @@ class TestProduct(unittest.TestCase):
             "categories": "Beauty > Skin Care > QV > QV Body",
             "images": "https://static.chemistwarehouse.com.au/ams/media/pi/53008/2DF_800.jpg",
             "videos": None,
-            "price": 2.03, # 澳洲元汇率0.68
+            "price": 15.63, # 澳洲元汇率0.68
             "shipping_days_min": 5,
             "shipping_days_max": 5,
             "weight": 2.20,
@@ -402,3 +402,7 @@ class TestProduct(unittest.TestCase):
         ]
         for key in keys:
             self.assertEqual(product[key], target_product[key])
+
+
+if __name__ == '__main__':
+    unittest.main()
