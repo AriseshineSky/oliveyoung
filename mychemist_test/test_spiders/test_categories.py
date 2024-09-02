@@ -22,9 +22,8 @@ class TestCategories(unittest.TestCase):
             url=url,
             body=body,
         )
-
         result = list(self.spider.parse_categories(response))
-        self.assertEqual(len(result), 2055)
+        self.assertEqual(len(result), 2056)
 
     def test_category_products_v1(self):
         assert isinstance(self.spider, MyChemistSpider)

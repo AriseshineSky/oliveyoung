@@ -229,21 +229,19 @@ class MyChemistSpider(scrapy.Spider):
                 total_pages = -(int(total_sel.css('::text').get().strip().split()[0]) // -120)
 
         links = ['https://www.mychemist.com.au'+a.css('::attr(href)').get() for a in response.css('a.product-container')]
-        # print(links)
         for l in links:
             yield scrapy.Request(l, headers=self.headers, callback=self.parse)
         
-        # print(total_pages, actual_page)
         if actual_page < total_pages:
             next_link = 'https://www.mychemist.com.au'+response.css('a.next-page::attr(href)').get()
             yield scrapy.Request(next_link, headers=self.headers, meta={
                 'total_pages': total_pages,
                 'actual_pages': actual_page+1
-            }, callback=self.parse_cat_products)
+            }, callback=self.parse_cat_products) # 这个callback似乎不运行？
 
     # https://www.mychemist.com.au/categories
     def parse_categories(self, response: HtmlResponse):
-        trx = response.css('div#p_lt_ctl07_pageplaceholder_p_lt_ctl00_wCM_AMS_tg_pnltreeTree tbody > tr') # 这里为什么测试时是空的？在网页上找却有很多内容
+        trx = response.css('div#p_lt_ctl07_pageplaceholder_p_lt_ctl00_wCM_AMS_tg_pnltreeTree tr')
         cat_links = ['https://www.mychemist.com.au'+tr.css('td span > a::attr(href)').get()+'?size=120'
                      for tr in trx if not tr.css('td img[alt="Expand"], td img[alt="Collapse"]')]
         
