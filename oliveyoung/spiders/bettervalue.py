@@ -30,7 +30,21 @@ class BetterValueSpider(scrapy.Spider):
         yield scrapy.Request(self.start_urls[0], headers=self.headers, callback=self.parse_categories)
 
     def parse_cat_products(self, response: HtmlResponse):
-        pass
+        prod_ax = response.css('ul#main-collection-product-grid a.card-link')
+        links = ['https://bettervaluepharmacy.com.au'+a.css('::attr(href)').get() for a in prod_ax]
+
+        print(links)
+        for l in links:
+            yield scrapy.Request(l, headers=self.headers,
+                                #  callback=
+                                 )
+        
+        if response.css('div.pagination-page-infinite > a.disabled'):
+            return
+        
+        next_url = 'https://bettervaluepharmacy.com.au'+response.css('div.pagination-page-infinite > a::attr(href)').get()
+        yield scrapy.Request(next_url, headers=self.headers)
 
     def parse_categories(self, response: HtmlResponse):
-        pass
+        cat_ax = response.css('a.header__menu-item')
+        cat_links = ['https://bettervaluepharmacy.com.au'+response.css('')]
