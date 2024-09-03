@@ -236,7 +236,7 @@ class MyChemistSpider(scrapy.Spider):
             next_link = 'https://www.mychemist.com.au'+response.css('a.next-page::attr(href)').get()
             yield scrapy.Request(next_link, headers=self.headers, meta={
                 'total_pages': total_pages,
-                'actual_pages': actual_page+1
+                'actual_page': actual_page+1
             }, callback=self.parse_cat_products) # 这个callback似乎不运行？
 
     # https://www.mychemist.com.au/categories
