@@ -4,6 +4,7 @@ import scrapy
 from scrapy.http import HtmlResponse
 
 
+# scrapy crawl bettervalue_all_cats -O bettervalue_all_cats.json
 class BetterValueCatSpider(scrapy.Spider):
     name = 'bettervalue_all_cats'
     allowed_domains = ['bettervaluepharmacy.com.au']
@@ -27,5 +28,15 @@ class BetterValueCatSpider(scrapy.Spider):
         }
     
     def parse(self, response: HtmlResponse):
-        pass
+        cat_ax = response.css('a.header__menu-item')
+        cat_lx = [a.css('::attr(href)').get() for a in cat_ax]
+        
+        cat_filter = set(l for a, l in zip(cat_ax, cat_lx) if a.css('span.icon-dropdown > svg'))
+        cat_links = ['https://bettervaluepharmacy.com.au'+l for l in cat_lx
+                     if ('/collections/' in l) and (l not in cat_filter)]
+
+        for cl in cat_links:
+            yield {
+                "categorie_link": cl
+            }
     
