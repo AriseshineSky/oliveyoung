@@ -5,7 +5,7 @@ import scrapy
 from scrapy.http import HtmlResponse
 
 
-# scrapy crawl mychemist_all_categories -O mychemist_categories.json
+# scrapy crawl mychemist_all_categories -O mychemist_categories.csv
 class MyChemistAllCategories(scrapy.Spider):
     name = "mychemist_all_categories"
     allowed_domains = ["mychemist.com.au"]

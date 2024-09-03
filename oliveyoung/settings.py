@@ -160,4 +160,7 @@ def custom_headers(
 
 PLAYWRIGHT_PROCESS_REQUEST_HEADERS = custom_headers
 
-
+FEED_EXPORT_ENCODING = "utf-8"
+FEED_EXPORTERS = {
+    'csv': 'oliveyoung.exporters.CsvCustomSeperator'
+}
