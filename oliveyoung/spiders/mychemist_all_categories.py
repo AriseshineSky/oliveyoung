@@ -5,7 +5,7 @@ import scrapy
 from scrapy.http import HtmlResponse
 
 
-# scrapy runspider all_categories.py
+# scrapy crawl mychemist_all_categories -O mychemist_categories.json
 class MyChemistAllCategories(scrapy.Spider):
     name = "mychemist_all_categories"
     allowed_domains = ["mychemist.com.au"]
@@ -29,4 +29,11 @@ class MyChemistAllCategories(scrapy.Spider):
         }
 
     def parse(self, response: HtmlResponse):
-        pass
+        trx = response.css('div#p_lt_ctl07_pageplaceholder_p_lt_ctl00_wCM_AMS_tg_pnltreeTree table > tr')
+        cat_links = ['https://www.mychemist.com.au'+tr.css('td a::attr(href)').get()+'?size=120'
+                     for tr in trx if (tr.css('td a') and (not tr.css('td img[alt="Expand"], td img[alt="Collapse"]')))]
+        
+        for cl in cat_links:
+            yield {
+                "categorie_link": cl
+            }
