@@ -1,5 +1,6 @@
 import sys
 sys.path.append(sys.path[0] + '/..')
+from re import findall
 
 import scrapy
 from scrapy.http import HtmlResponse
@@ -2067,7 +2068,7 @@ class MyChemistCategorie(scrapy.Spider):
         "https://www.mychemist.com.au/shop-online/731/travel-medicine-tma-b2b-products-only?size=120",
         "https://www.mychemist.com.au/shop-online/1053/samples?size=120",
     ]
-    prod_links = set()
+    prod_ids = set()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -2086,6 +2087,11 @@ class MyChemistCategorie(scrapy.Spider):
             "Referrer-Policy": "strict-origin-when-cross-origin",
         }
     
+    def get_product_id(self, url: str):
+        id_match = findall(r'buy/(\d+)', url)
+        if id_match:
+            return id_match[0]
+
     def start_requests(self):
         for su in self.start_urls:
             yield scrapy.Request(su, headers=self.headers, callback=self.parse)
@@ -2107,8 +2113,9 @@ class MyChemistCategorie(scrapy.Spider):
 
         links = ['https://www.mychemist.com.au'+a.css('::attr(href)').get() for a in response.css('a.product-container')]
         for l in links:
-            if l not in self.prod_links:
-                self.prod_links.add(l)
+            prod_id = self.get_product_id(l)
+            if prod_id not in self.prod_ids:
+                self.prod_ids.add(prod_id)
                 yield {
                     # "categorie_link": response.url,
                     "product_link": l
