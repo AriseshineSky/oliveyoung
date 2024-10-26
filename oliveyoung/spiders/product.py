@@ -175,17 +175,19 @@ class ProductSpider(scrapy.Spider):
         product["existence"] = self.get_existence(product_info)
         product["categories"] = self.get_categories(product_info)
 
-        if product["optionList"]:
+        if "optionList" in product_info:
             if product["available_qty"] is None:
-                product["available_qty"] = product["optionList"][0]["buyStockQty"]
+                product["available_qty"] = product_info.get(
+                    "optionList", [{"buyStockQty": None}]
+                )[0]["buyStockQty"]
 
             options = [{"id": None, "name": "Composition"}]
 
             variants = []
-            for var in product["optionList"]:
+            for var in product_info["optionList"]:
                 var_imgs = []
-                if var["optnImagePath"]:
-                    var_imgs = (
+                if var.get("optnImagePath"):
+                    var_imgs.append(
                         "https://image.globaloliveyoungshop.com/" + var["optnImagePath"]
                     )
                 for i in range(1, 4):
@@ -231,36 +233,40 @@ class ProductSpider(scrapy.Spider):
             details = info["details"]
 
             if (
-                details["sellingPointText"]
-                or details["whyWeLoveItText"]
-                or details["ftrdIngrdText"]
-                or details["howToUseText"]
-                or details["dtlAddDesc"]
+                details.get("sellingPointText")
+                or details.get("whyWeLoveItText")
+                or details.get("ftrdIngrdText")
+                or details.get("howToUseText")
+                or details.get("dtlAddDesc")
             ):
                 descr += '<div class="oliveyoung-descr">\n'
                 descr += "  <h2>Product infos</h2>\n"
-                if details["sellingPointText"]:
+                if details.get("sellingPointText"):
                     descr += "<h3>Selling point</h3>\n"
                     descr += f'<div>{details['sellingPointText'].replace('\r\n', '<br>')}</div>\n'
-                if details["whyWeLoveItText"]:
+                if details.get("whyWeLoveItText"):
                     descr += "<h3>Why we love it</h3>\n"
                     descr += f'<div>{details['whyWeLoveItText'].replace('\r\n', '<br>')}</div>\n'
-                if details["ftrdIngrdText"]:
+                if details.get("ftrdIngrdText"):
                     descr += "<h3>Featured ingredients</h3>\n"
                     descr += f'<div>{details['ftrdIngrdText'].replace('\r\n', '<br>')}</div>\n'
-                if details["howToUseText"]:
+                if details.get("howToUseText"):
                     descr += "<h3>How to use</h3>\n"
                     descr += f'<div>{details['howToUseText'].replace('\r\n', '<br>')}</div>\n'
                 descr += "</div>\n"
 
             # TODO：解析图片
-            if details["optimDtlDesc"] or details["dtlDesc"] or details["dtlAddDesc"]:
+            if (
+                details.get("optimDtlDesc")
+                or details.get("dtlDesc")
+                or details.get("dtlAddDesc")
+            ):
                 descr += '<div class="oliveyoung-descr">\n'
 
-                if details["dtlAddDesc"]:
+                if details.get("dtlAddDesc"):
                     descr += f'  <div>{details['dtlAddDesc'].replace('\r\n', '<br>')}</div>\n'
 
-                if details["optimDtlDesc"]:
+                if details.get("optimDtlDesc"):
                     img_match = findall(
                         r"data-src\s*=\s*&quot;([^\s]*)&quot;",
                         details["optimDtlDesc"],
@@ -268,7 +274,7 @@ class ProductSpider(scrapy.Spider):
                     if img_match:
                         for m in img_match:
                             descr += f'    <img src="https:{m}">\n'
-                elif details["dtlDesc"]:
+                elif details.get("dtlDesc"):
                     img_match = findall(
                         r"src\s*=\s*&quot;([^\s]*)&quot;", details["dtlDesc"]
                     )
