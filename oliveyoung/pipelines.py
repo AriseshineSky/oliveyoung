@@ -5,31 +5,34 @@
 
 
 # useful for handling different item types with a single interface
-from itemadapter import ItemAdapter
-import pymongo
-from pymongo import MongoClient
-from scrapy.exceptions import DropItem
-from scrapy import Request
-from scrapy.utils.project import get_project_settings
 
 
-class OliveyoungPipeline:
-    def __init__(self,):
-        self.product_ids = set()
-        settings = get_project_settings()
-        mongo_url = settings.get("MONGO_URI")
-        self.client = MongoClient(mongo_url)
-        self.db = self.client[settings.get("MONGO_DATABASE")]
+from em_product.resources.pipelines import (
+    ESCategoryPipeline,
+    ESProductUrlPipeline,
+    ESProductPipeline,
+    ESProductRecrawlPipeline,
+    ESTranslationPipeline,
+    ESSeedProductPipeline,
+)
 
-    def open_spider(self, spider):
-        collection = self.db["product_urls"]
-        cursor = collection.find()
-        for doc in cursor:
-            spider.start_urls.append(doc["url"])
 
-    def close_spider(self, spider):
-        self.client.close()
+class CategoryPipeline(ESCategoryPipeline):
+    CATEGORY_INDEX = "oliveyoung_categories"
+    ELASTICSEARCH_INDEX = "oliveyoung_categories"
 
-    def process_item(self, item, spider):
-        self.db["products"].update_one({"_id": item["_id"]}, {"$set": dict(item)}, True)
-        return item
+
+class ProductUrlPipeline(ESProductUrlPipeline):
+    CATEGORY_INDEX = "oliveyoung_categories"
+    ELASTICSEARCH_INDEX = "oliveyoung_product_urls"
+
+
+class ProductPipeline(ESProductPipeline):
+    PRODUCT_URL_INDEX = "oliveyoung_product_urls"
+    PRODUCT_INDEX = "oliveyoung_products"
+    ELASTICSEARCH_INDEX = "oliveyoung_products"
+
+
+class TranslationPipeline(ESTranslationPipeline):
+    TRANSLATION_INDEX = "oliveyoung_translation"
+    ELASTICSEARCH_INDEX = TRANSLATION_INDEX
